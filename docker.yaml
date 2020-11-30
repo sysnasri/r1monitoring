@@ -99,7 +99,7 @@
          group: prometheus
          recurse: true
        loop:
-         - /data
+         - /data/prometheus
          - /etc/prometheus
      - file: 
          name: /etc/prometheus/prometheus.yml
