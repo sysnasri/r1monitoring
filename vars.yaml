@@ -1,0 +1,19 @@
+docker_packages:
+   ubuntu: 
+     - apt-transport-https
+     - ca-certificates
+     - curl
+     - gnupg-agent
+     - software-properties-common
+     - python3-pip
+     - virtualenv
+     - python3-setuptools
+containers_name: 
+  - prom/prometheus
+  - prom/node-exporter
+  - grafana/grafana  
+proxy: 
+   username: nasri
+   password: nasri
+   server: 151.80.88.113
+   port: 1370    

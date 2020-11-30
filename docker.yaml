@@ -1,0 +1,119 @@
+---
+- name: installing docker and a container.
+  hosts: bond
+  vars_files: vars.yaml
+  tasks:
+     - name: installing necessary packages. 
+       package: 
+         name: "{{item}}"
+         state: present
+       loop: "{{docker_packages.ubuntu}}"
+       when: ansible_distribution == "Ubuntu"
+     - name: Add Docker GPG apt Key 
+       apt_key:
+            url: https://download.docker.com/linux/ubuntu/gpg
+            state: present
+     - name: Set Http proxy for APT 
+       template:
+          src: apt.proxy
+          dest: /etc/apt/apt.conf.d/proxy.conf
+     - name: Set http proxy environement variables
+       package:
+       environment:
+          http_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}"     
+          https_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}" 
+     - name: Add Docker Repository
+       apt_repository:
+              repo: deb https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
+              state: present
+     - name: Update apt and install docker-ce
+       apt: 
+          update_cache: true 
+          name: docker-ce 
+          state: latest
+     - name: Set docker proxy
+       file:
+          name: /etc/systemd/system/docker.service.d 
+          state: directory
+     - template:
+            src: docker.proxy
+            dest: /etc/systemd/system/docker.service.d/http-proxy.conf  
+       notify:
+          - docker_restart
+          - daemon_reload
+     - name: start docker service at boot level
+       service:
+         name: docker
+         enabled: true 
+         state: started     
+     - meta: flush_handlers
+     - name: check if docker-compose is already installed 
+       stat: 
+         path: /usr/local/bin/docker-compose
+       register: docpos
+
+     - name: installing Docker Compose
+       shell: 
+         cmd: curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose; chmod +x  /usr/local/bin/docker-compose
+
+       when: docpos.stat.exists == false  
+
+
+     - name: Install Docker Module for Python
+       pip:
+            name: "{{item}}" 
+       loop:
+        - docker
+        - docker-compose     
+     - name: Pull default Docker image
+       docker_image:
+            name: "{{ item }}"
+            source: pull
+       loop: "{{containers_name}}"     
+     - name: prepare prometheus for docker
+       user: 
+         name: prometheus
+         shell: /bin/false
+         uid: 1372
+     - name:
+       group:
+             name: prometheus
+             gid: 1372
+
+     - file:
+         name: "{{item}}"
+         state: directory
+         owner: prometheus
+         group: prometheus
+         recurse: true
+       loop:
+         - /data
+         - /etc/prometheus
+     - file: 
+         name: /etc/prometheus/prometheus.yml
+         state: touch
+         owner: prometheus
+         group: prometheus
+     - copy: 
+         src: prometheus.yml
+         dest: /etc/prometheus/prometheus.yml 
+     - copy:
+        src: ./monitoring/docker-compose.yaml
+        dest: /home/ansible/docker-compose.yaml
+                
+     - name: Create Services with docker compose 
+       docker_compose:
+         project_src: /home/ansible/
+         state: present 
+
+
+          
+  handlers:
+   - name: docker_restart
+     service:
+        name: docker
+        state: restarted
+   - name: daemon_reload
+     systemd:
+       daemon_reload: true    
+
