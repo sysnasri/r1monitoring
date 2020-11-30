@@ -10,9 +10,10 @@
            nameserver 4.2.2.4
          insertafter: EOF
          path: /etc/resolv.conf
-           
+
      - name: installing necessary packages. 
-       package: 
+       package:
+         update_cach: true
          name: "{{item}}"
          state: present
        loop: "{{docker_packages.ubuntu}}"
