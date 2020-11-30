@@ -1,9 +1,9 @@
 ---
-- name: installing docker and a container.
+- name: Installing docker and a container.
   hosts: bond
   vars_files: vars.yaml
   tasks:
-     - name: set proper nameserver 
+     - name: Setting proper nameserver 
        blockinfile:
          block: |
            nameserver "{{nameserver.ns1}}"
@@ -11,7 +11,7 @@
          insertafter: EOF
          path: /etc/resolv.conf
 
-     - name: installing necessary packages. 
+     - name: Installing necessary packages. 
        package:
          update_cach: true
          name: "{{item}}"
@@ -22,7 +22,7 @@
        apt_key:
             url: https://download.docker.com/linux/ubuntu/gpg
             state: present
-     - name: Set Http proxy for APT 
+     - name: Set http proxy for APT 
        template:
           src: apt.proxy
           dest: /etc/apt/apt.conf.d/proxy.conf
@@ -31,16 +31,16 @@
        environment:
           http_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}"     
           https_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}" 
-     - name: Add Docker Repository
+     - name: Adding Docker Repository
        apt_repository:
               repo: deb https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
               state: present
-     - name: Update apt and install docker-ce
-       apt: 
+     - name: Updating apt and install docker-ce
+       package: 
           update_cache: true 
           name: docker-ce 
           state: latest
-     - name: Set docker proxy
+     - name: Setting docker systemd proxy
        file:
           name: /etc/systemd/system/docker.service.d 
           state: directory
@@ -50,33 +50,38 @@
        notify:
           - docker_restart
           - daemon_reload
-     - name: start docker service at boot level
+     - name: Enabling docker service to run at boot 
        service:
          name: docker
          enabled: true 
          state: started     
      - meta: flush_handlers
-     - name: check if docker-compose is already installed 
+     - name: Checking if docker-compose is already installed 
        stat: 
          path: /usr/local/bin/docker-compose
        register: docpos
 
-     - name: installing Docker Compose
+     - name: Installing Docker Compose
        shell: 
          cmd: curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose; chmod +x  /usr/local/bin/docker-compose
 
        when: docpos.stat.exists == false  
 
 
-     - name: Install Docker Module for Python
+     - name: Installing Docker Module for Python
        pip:
             name: "{{item}}" 
             state: latest
        loop: "{{pip_modules}}"
-     - name: login to dockerhub
-       docker_login:
-         username: "{{docker.username}}"
-         password: "{{docker.password}}"       
+       notify:
+        - docker_restart
+     - meta: flush_handlers
+
+ ################### Set your Docker hub credentials in vars.yaml #########################    
+      # - name: login to dockerhub
+      #  docker_login:
+      #    username: "{{docker.username}}"
+      #    password: "{{docker.password}}"       
      - name: Pull default Docker image
        docker_image:
             name: "{{ item }}"
@@ -110,15 +115,13 @@
          src: prometheus.yml
          dest: /etc/prometheus/prometheus.yml 
      - copy:
-        src: ./monitoring/docker-compose.yaml
-        dest: /home/ansible/docker-compose.yaml
+        src: ./docker-compose.yaml
+        dest: /tmp/docker-compose.yaml
                 
-     - name: Create Services with docker compose 
+     - name: Creating Services with docker compose 
        docker_compose:
-         project_src: /home/ansible/
+         project_src: /tmp/
          state: present 
-
-
           
   handlers:
    - name: docker_restart
