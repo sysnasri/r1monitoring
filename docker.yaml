@@ -71,8 +71,9 @@
      - name: Install Docker Module for Python
        pip:
             name: "{{item}}" 
+            state: latest
        loop:
-        - pip3
+        - pip
         - docker
         - docker-compose     
      - name: Pull default Docker image
