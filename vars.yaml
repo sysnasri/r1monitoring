@@ -1,3 +1,4 @@
+Target_Host: bond
 docker_packages:
    ubuntu: 
      - apt-transport-https
@@ -12,11 +13,11 @@ images_name:
   - prom/prometheus
   - prom/node-exporter
   - grafana/grafana  
-proxy: 
-   username: nasri
-   password: nasri
-   server: 151.80.88.113
-   port: 1370
+# proxy: 
+#    username: ""
+#    password: ""
+#    server: ""
+#    port: ""
 pip_modules:
         - pip
         - docker

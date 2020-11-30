@@ -1,6 +1,6 @@
 ---
 - name: Installing docker and a container.
-  hosts: bond
+  hosts: "{{Target_Host}}"
   vars_files: vars.yaml
   tasks:
      - name: Setting proper nameserver 
@@ -26,11 +26,13 @@
        template:
           src: apt.proxy
           dest: /etc/apt/apt.conf.d/proxy.conf
-     - name: Set http proxy environement variables
-       package:
-       environment:
-          http_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}"     
-          https_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}" 
+
+    ################# Set HTTP Proxy if you have one in vars.yaml ##################      
+    #  - name: Set http proxy environement variables
+    #    package:
+    #    environment:
+    #       http_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}"     
+    #       https_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}" 
      - name: Adding Docker Repository
        apt_repository:
               repo: deb https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
@@ -40,16 +42,18 @@
           update_cache: true 
           name: docker-ce 
           state: latest
-     - name: Setting docker systemd proxy
-       file:
-          name: /etc/systemd/system/docker.service.d 
-          state: directory
-     - template:
-            src: docker.proxy
-            dest: /etc/systemd/system/docker.service.d/http-proxy.conf  
-       notify:
-          - docker_restart
-          - daemon_reload
+
+          ######## Set HTTP Proxy for Docker systemd service in vars.yaml ###########3
+    #  - name: Setting docker systemd proxy
+    #    file:
+    #       name: /etc/systemd/system/docker.service.d 
+    #       state: directory
+    #  - template:
+    #         src: docker.proxy
+    #         dest: /etc/systemd/system/docker.service.d/http-proxy.conf  
+    #    notify:
+    #       - docker_restart
+    #       - daemon_reload
      - name: Enabling docker service to run at boot 
        service:
          name: docker
