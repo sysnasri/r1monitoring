@@ -6,8 +6,8 @@
      - name: set proper nameserver 
        blockinfile:
          block: |
-           nameserver 8.8.8.8
-           nameserver 4.2.2.4
+           nameserver "{{nameserver.ns1}}"
+           nameserver "{{nameserver.ns2}}"
          insertafter: EOF
          path: /etc/resolv.conf
 
@@ -72,24 +72,26 @@
        pip:
             name: "{{item}}" 
             state: latest
-       loop:
-        - pip
-        - docker
-        - docker-compose     
+       loop: "{{pip_modules}}"
+     - name: login to dockerhub
+       docker_login:
+         username: "{{docker.username}}"
+         email: "{{docker.email}}"
+         password: "{{docker.password}}"       
      - name: Pull default Docker image
        docker_image:
             name: "{{ item }}"
             source: pull
-       loop: "{{containers_name}}"     
+       loop: "{{images_name}}"     
      - name: prepare prometheus for docker
        user: 
          name: prometheus
          shell: /bin/false
-         uid: 1372
+         uid: "{{user.uid}}"
      - name:
        group:
              name: prometheus
-             gid: 1372
+             gid: "{{user.gid}}"
 
      - file:
          name: "{{item}}"
