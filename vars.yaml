@@ -29,6 +29,5 @@ nameserver:
   ns1: 8.8.8.8
   ns2: 4.2.2.4 
 docker:
-  username: sysnasri
-  password: ali6056071ali
-  email: eu.retailers@gmail.com         
+  username: "sysnasri"
+  password: "ali6056071ali"     
