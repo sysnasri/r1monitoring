@@ -3,6 +3,14 @@
   hosts: bond
   vars_files: vars.yaml
   tasks:
+     - name: set proper nameserver 
+       blockinfile:
+         block: |
+           nameserver 8.8.8.8
+           nameserver 4.2.2.4
+         insertafter: EOF
+         path: /etc/resolv.conf
+           
      - name: installing necessary packages. 
        package: 
          name: "{{item}}"
