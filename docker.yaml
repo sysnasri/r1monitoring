@@ -13,7 +13,7 @@
 
      - name: Installing necessary packages. 
        package:
-         update_cach: true
+         update_cache: true
          name: "{{item}}"
          state: present
        loop: "{{docker_packages.ubuntu}}"
@@ -28,11 +28,11 @@
           dest: /etc/apt/apt.conf.d/proxy.conf
 
     ################# Set HTTP Proxy if you have one in vars.yaml ##################      
-    #  - name: Set http proxy environement variables
-    #    package:
-    #    environment:
-    #       http_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}"     
-    #       https_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}" 
+     - name: Set http proxy environement variables
+       shell:
+       environment:
+           http_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}"     
+           https_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}" 
      - name: Adding Docker Repository
        apt_repository:
               repo: deb https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
@@ -44,16 +44,16 @@
           state: latest
 
           ######## Set HTTP Proxy for Docker systemd service in vars.yaml ###########3
-    #  - name: Setting docker systemd proxy
-    #    file:
-    #       name: /etc/systemd/system/docker.service.d 
-    #       state: directory
-    #  - template:
-    #         src: docker.proxy
-    #         dest: /etc/systemd/system/docker.service.d/http-proxy.conf  
-    #    notify:
-    #       - docker_restart
-    #       - daemon_reload
+     - name: Setting docker systemd proxy
+       file:
+           name: /etc/systemd/system/docker.service.d 
+           state: directory
+     - template:
+             src: docker.proxy
+             dest: /etc/systemd/system/docker.service.d/http-proxy.conf  
+       notify:
+           - docker_restart
+           - daemon_reload
      - name: Enabling docker service to run at boot 
        service:
          name: docker
@@ -82,10 +82,10 @@
      - meta: flush_handlers
 
  ################### Set your Docker hub credentials in vars.yaml #########################    
-      # - name: login to dockerhub
-      #  docker_login:
-      #    username: "{{docker.username}}"
-      #    password: "{{docker.password}}"       
+     - name: login to dockerhub
+       docker_login:
+          username: "{{docker.username}}"
+          password: "{{docker.password}}"       
      - name: Pull default Docker image
        docker_image:
             name: "{{ item }}"
