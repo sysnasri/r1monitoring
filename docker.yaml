@@ -3,6 +3,12 @@
   hosts: "{{Target_Host}}"
   vars_files: vars.yaml
   tasks:
+      ################# Set HTTP Proxy if you have one in vars.yaml ##################      
+    #  - name: Set http proxy environement variables
+    #    package:
+    #    environment:
+    #       http_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}"     
+    #       https_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}"
      - name: Setting proper nameserver 
        blockinfile:
          block: |
@@ -27,12 +33,6 @@
           src: apt.proxy
           dest: /etc/apt/apt.conf.d/proxy.conf
 
-    ################# Set HTTP Proxy if you have one in vars.yaml ##################      
-     - name: Set http proxy environement variables
-       shell:
-       environment:
-           http_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}"     
-           https_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}" 
      - name: Adding Docker Repository
        apt_repository:
               repo: deb https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
