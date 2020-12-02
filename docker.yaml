@@ -2,13 +2,11 @@
 - name: Installing docker and a container.
   hosts: "{{Target_Host}}"
   vars_files: vars.yaml
+ #environment:
+   #http_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}"     
+   #https_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}"
   tasks:
-      ################# Set HTTP Proxy if you have one in vars.yaml ##################      
-    #  - name: Set http proxy environement variables
-    #    package:
-    #    environment:
-    #       http_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}"     
-    #       https_proxy: "http://{{proxy.username}}:{{proxy.password}}@{{proxy.server}}:{{proxy.port}}"
+
      - name: Setting proper nameserver 
        blockinfile:
          block: |
