@@ -41,7 +41,7 @@
           name: docker-ce 
           state: latest
 
-          ######## Set HTTP Proxy for Docker systemd service in vars.yaml ###########3
+          ######## Set HTTP Proxy for Docker systemd service in vars.yaml ###########
      - name: Setting docker systemd proxy
        file:
            name: /etc/systemd/system/docker.service.d 
